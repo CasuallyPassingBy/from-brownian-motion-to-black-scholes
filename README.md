@@ -43,6 +43,7 @@ black-scholes-derivation/
 ├── notes/
 │   └── derivation-outline.md
 ├── README.md
+├── LiSCENSE
 ```
 
 I’d love to eventually add:
