@@ -1,0 +1,20 @@
+\begin{thebibliography}{1}
+
+\bibitem{oksendal2013stochastic}
+B.~Oksendal.
+\newblock {\em Stochastic Differential Equations: An Introduction with
+  Applications}.
+\newblock Universitext. Springer Berlin Heidelberg, 2013.
+
+\bibitem{ross1995stochastic}
+S.M. Ross.
+\newblock {\em Stochastic Processes}.
+\newblock Wiley series in probability and mathematical statistics. Wiley, 1995.
+
+\bibitem{shreve2005stochastic}
+S.~Shreve.
+\newblock {\em Stochastic Calculus for Finance I: The Binomial Asset Pricing
+  Model}.
+\newblock Springer Finance. Springer New York, 2005.
+
+\end{thebibliography}

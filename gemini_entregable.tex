@@ -1,0 +1,400 @@
+\documentclass{article}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{listings}
+\usepackage{xcolor}
+
+\newcommand{\R}{\mathbb R}
+
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolor}{rgb}{0.95,0.95,0.92}
+
+\lstdefinestyle{pythonstyle}{
+    backgroundcolor=\color{backcolor},   
+    commentstyle=\color{codegray},
+    keywordstyle=\color{blue},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\ttfamily\footnotesize,
+    breakatwhitespace=false,         
+    breaklines=true,                 
+    captionpos=b,                    
+    keepspaces=true,                 
+    numbers=left,                    
+    numbersep=5pt,                  
+    showspaces=false,                
+    showstringspaces=false,
+    showtabs=false,                  
+    tabsize=4,
+    language=Python
+}
+
+\newcommand{\pythoncode}[1]{
+\begin{lstlisting}[style=pythonstyle]
+#1
+\end{lstlisting}
+}
+
+\author{M. Moscoso}
+\title{Fundamentos matemáticos de la valoración de opciones europeas: una introducción a Black-Scholes}
+\date{30 de Mayo 2025}
+
+\newtheorem{definition}{Definición}
+\newtheorem{theorem}{Teorema}
+
+\begin{document}
+
+\maketitle
+
+\section{Introducción}
+En el presente trabajo se abordará una introducción matemática a la valoración de opciones europeas, partiendo desde los fundamentos del cálculo estocástico y culminando en la famosa ecuación de Black-Scholes. El objetivo principal es proporcionar un marco riguroso y accesible que permita entender cómo las herramientas de probabilidad, en particular los procesos de tipo Browniano, intervienen en la modelación de precios de activos financieros.
+
+Se partirá repasando las propiedades esenciales del movimiento Browniano estándar y su extensión al movimiento Browniano geométrico, que es fundamental en la modelización de precios relativos en mercados financieros. Posteriormente, se explorará la fórmula de Itô, pieza central del cálculo estocástico, que habilita la transformación de integrales difíciles en expresiones más manejables y permite la formulación de ecuaciones diferenciales estocásticas. Finalmente, se mostrará cómo bajo ciertas hipótesis de mercado (ausencia de arbitraje, liquidez, tasas constantes, etc.) se llega a la derivación de la ecuación diferencial parcial de Black-Scholes, que constituye el núcleo matemático para valorar opciones europeas.
+
+Este trabajo está dirigido a quienes deseen comprender la estructura matemática detrás de los modelos financieros sin necesariamente entrar en los detalles más avanzados de las demostraciones formales, priorizando la intuición y la claridad conceptual sobre el rigor exhaustivo.
+
+\section{Cálculo estocástico}
+
+Consideremos el epsacio de medida de probabilidad $(\Omega, \mathcal F, \mathbb P)$. 
+
+Recordemos que un proceso estocástico $\{B(t) \mid t \ge 0\}$ es un \emph{movimiento 
+Browniano estándar}, si satisface lo siguiente:
+\begin{enumerate}
+    \item $B(0) = 0$
+    \item $\{B(t) \mid t \ge 0\}$ es un proceso de incrementos indepedientes y estacionarios.
+    \item Cada $B(t) \sim \mathcal N(0, t)$. 
+\end{enumerate}
+% Removed potentially confusing sentence: "En caso que c = 1, decimos que {X(t) | t >= 0} es el moviemiento Browniano estándar."
+
+Sabemos que $\mathbb E[[B(t_2) - B(t_1)]^2 - (t_2 - t_1)] = 0$, para cualesquiera 
+$0\le t_1 < t_2$. 
+
+Ahora, vamos a considerar una variación del movimiento Browniano llamada 
+\emph{movimiento Browniano geométrico}. Sea $\{X(t) \mid t \ge 0\}$ un movimiento Browniano. 
+Definimos $Y(t) := \exp(X(t))$ para cada $t \ge 0$. El proceso estocástico 
+$\{Y(t) \mid t \ge 0\}$ es un movimiento Browniano geométrico. 
+
+El movimiento Browniano geométrico es particularmente útil para cuando queremos considerar
+los incrementos porcentuales de algo, no necesariamente que nos interesa las cantidades absolutas.
+
+\begin{definition}\label{Def_GBM}
+    Un \emph{movimiento Browniano geométrico} es un proceso estocástico que tiene esta forma
+    $$X(t) := X_0 \exp\left(\sigma B(t) + \left(\mu - \frac{1}{2}\sigma^2\right) t\right),$$
+    donde $t\ge 0$, $\mu, \sigma>0$ constantes $\{B(t) \mid t \ge0\}$ es un moviemiento Browniano
+    estándar.
+\end{definition}
+
+\subsection{Fórmula de Itô}
+
+Para seguir con nuestro desarollo de a la ecuación de Black-Scholes, necesitamos entender
+a ciertos aspectos del cálculos estocástico. Lo más importante que se tiene que conocer
+es existen las integrales estocásticas como la integral de Itô. Explicar la integral
+de Itô esta fuera del alcance de este trabajo. Lo que si se puede hacer es dar un 
+intuición sobre lo que significan los símbolos y que clase de funciones podemos integrar.
+
+Sean $\{B_t(\omega) \mid t \ge 0\}$ un movimiento Browniano estáesndar y 
+$f: [0, \infty) \times \Omega \to \R$. Una de las restricciones que queremos tener
+es que para cada $t \ge 0$ la función $f(t, \omega)$ solo dependa de los valores de
+$\{B(s) \mid s \le t\}$. Esto es para que la función no pueda ver el ``futuro" de 
+$\{B(t) \mid t \ge 0\}$. Naturalememte, como queremos integrar a $f$ otra restricción
+es que $f$ sea medible. Por útlimo pedimos que 
+$$\mathbb E\left[\int_a^b f(t, \omega)^2\, dt \right]<\infty.$$
+Ésto es porque queremos que $f$ pertenezca a $\mathcal L^2([0, \infty) \times \Omega)$,
+el espacio normado de funciones integrables con norma 2. 
+
+Ahora para la definición de la integral de Itô:
+$$
+\int_0^t f(s, \omega) \, d B_s(\omega) := \lim_{\|P \| \to 0} \sum_{i = 1}^n f(t_{i-1}, \omega) (B_{t_i}(\omega) - B_{t_{i-1}}(\omega)),
+$$
+Esta definición se parece mucho a la definción de la integral de Riemann, salvo que 
+nosotros fijamos donde se evalua la función. Esto es porque de nuevo, queremos 
+restringir el proceso para que no pueda ver el futuro.
+
+Dada esta definción no es fácil calcular integrales como 
+$$\int_0^t B_s\, dB_s = \frac12 B_t^2 -\frac12 t$$. Por esto necesitamos saber como 
+transformar las integrales en integrales más fáciles.
+
+\begin{definition}
+    Sea $B_t$ un movimiento Browniano estándar. Un proceso de Itô es un proceso
+    estocástico $X_t$ de la forma: 
+    $$X_t := X_0  + \int_0^t u(s, \omega)\, ds + \int_0^t v(s, \omega)\, dB_s(\omega),$$
+    donde $$\mathbb P\left(\int_0^t v(s, \omega)^2\, ds < \infty \text{ para toda $t\ge 0$}\right) = 1.$$
+    Tambien, suponemos que $u$ es integrable por Itô y 
+    $$\mathbb P\left(\int_0^t |u(s, \omega)|\, ds < \infty \text{ para toda $t\ge 0$}\right) = 1.$$
+\end{definition}
+
+Si $X_t$ es un proceso de Itô de la forma de la definición, se puede escribir de manera
+más compacta en forma diferencial $$d X_t = u dt + v dB_t.$$ Por ejemplo, la 
+integral $\displaystyle \int_0^t B_s\, dB_s = \frac12 B_t^2 -\frac12 t$, se puede expresar como
+$ d\left(\frac12 B_t^2\right) = \frac12dt + B_t dB_t$.
+
+El siguiente resultado es conocido como la \emph{fórmula de Itô}:
+
+\begin{theorem}
+    Sean $X_t$ un proceso de Itô dado por $dX_t = udt + vdB_t$, y $f: [0, \infty) \times \R \to \R$
+    una función con segundas derivadas continuas. Si conideramos el proceso estocástico 
+    $Y_t := f(t, X_t)$, entonces $Y_t$ es un proceso de Itô, y esta dado por
+    $$
+        dY_t = \left(\frac{\partial f}{\partial t}(t, X_t) + u\frac{\partial f}{\partial x}(t, X_t) +
+     \frac{v^2}{2}\frac{\partial^2 f}{\partial x^2}(t, X_t)\right) dt 
+    + \frac{\partial f}{\partial x}(t, X_t) v dB_t \\ % Corrected dX_t to vdB_t after substituting u and for consistency with second line.
+    $$
+\end{theorem}
+
+Este resultado está fuera del alcance de este trabajo, pero nos permite calcular integrales.
+Dados estos resultados, podemos introducir la idea de ecuaciones integrales estocásticas.
+Queremos encontrar un proceso estocástico que satisfaga la ecuación integral
+$$
+    X_t = X_0 + \int_0^t b(s, X_s) \, ds + \int_0^t \sigma(s, X_s) \, dB_s,
+$$
+y en su forma diferencial, 
+$$
+dX_t = b(t, X_t) \, dt + \sigma(t, X_t) \, dB_t,
+$$
+donde $b(t, X_t)$ y $\sigma(t, X_t)$ son funciones dadas.
+
+La forma en la que se puede interpretar la ecuación 
+$dX_t = b(t, X_t) \, dt + \sigma(t, X_t) \, dB_t$ es que tiene una parte determinista,
+$b(t, X_t) \, dt$, y una parte estocástica, $\sigma(t, X_t) \, dB_t$. Así, se puede considerar
+que las ecuaciones diferenciales estocásticas son similares a las ecuaciones diferenciales
+ordinarias, pero con un ``ruido'' aleatorio.
+
+Un ejemplo clásico de ecuación diferencial ordinaria es el modelo de 
+crecimiento exponencial:
+$$
+\frac{d X_t}{dt} = a X_t.
+$$
+Ahora queremos considerar que $a$ tenga un componente aleatorio.
+Así, podemos transformar la ecuación diferencial ordinaria en una estocástica:
+$$
+dX_t = r X_t \, dt + \alpha X_t \, dB_t.
+$$
+Para resolver esta ecuación, podemos dividir ambos lados entre $X_t$:
+$$
+\frac{dX_t}{X_t} = r \, dt + \alpha \, dB_t.
+$$
+Por lo tanto, tenemos que:
+$$
+\int_0^t \frac{dX_s}{X_s} = r t + \alpha B_t.
+$$
+
+Para calcular la integral $\displaystyle\int_0^t \frac{dX_s}{X_s}$, consideramos
+la función $g(x) = \ln(x)$, para $x > 0$. Aplicando la fórmula de Itô, obtenemos:
+$$
+d(\ln X_t) = \frac{1}{X_t} \, dX_t - \frac{1}{2} \alpha^2 \, dt.
+$$
+Así, podemos reescribir:
+$$
+\frac{dX_t}{X_t} = d(\ln X_t) + \frac{1}{2} \alpha^2 \, dt.
+$$
+Finalmente, integramos y concluimos que:
+$$
+\ln\left( \frac{X_t}{X_0} \right) = \left( r - \frac{1}{2} \alpha^2 \right) t + \alpha B_t,
+$$
+y por lo tanto,
+$$
+X_t = X_0 \exp\left( \left( r - \frac{1}{2} \alpha^2 \right) t + \alpha B_t \right).
+$$
+
+Esto corresponde al movimiento Browniano geométrico (véase la definción~\ref{Def_GBM}). 
+
+\section{La ecuación de Black-Scholes}
+
+Tendremos que tener unas cuantas suposiciones para poder obtener la ecuación de Black-Scholes.
+Primero, el precio del activo $S_t$ evoluciona según la ecuación diferencial 
+estocástica: $$dS_t = \mu S_t dt+ \sigma S_t dB_t.$$
+\begin{enumerate}
+    \item Mercados son eficientes y sin oportunidad de arbitraje.
+    \item No hay costos de transacción ni impuestos. 
+    \item Los activos son perfectamente divisibles. 
+    \item Es posible ajustar continuamente la cartera para eliminar riesgo.
+    \item Tasa libre de riesgo constante.
+    \item No se pagan dividendos.
+    \item Los mercados son líquidos.
+\end{enumerate}
+
+Considermos una opción europea que pga $g(S(T))$ en tiempo $T$. Let $v(t, x)$ denota
+el valor de la opción en tiempo $t$ si el precio del stock $S(t) = x$. Así, el valor
+de la opción a tiempo $t\in [0, T]$ es $v(t, S_t)$. Por la fórmula de Itô sabemos que
+
+$$
+dv(t, S_t) = \left(\frac{\partial v}{\partial t} + 
+\mu S_t\frac{\partial v}{\partial S_t}+ 
+\frac12 \sigma^2 S_t^2 \frac{\partial^2 v}{\partial S_t^2}\right) dt+
+\sigma S_t \frac{\partial v}{\partial S_t}dB_t.
+$$
+
+Por otra parte, necesitamos considerar a los inversores. Sean $X_0$ la riqueza inicial de un inversor,
+$r$ la tasa de interes de los prestamos, y para cada tiempo $t$, $\Delta_t$ la cantidad del stock que tiene el inversor . 
+$\Delta_t$ puede ser aleatorio, pero tiene que no ver el futuro. 
+Notemos que si $X_t$ representa la riqueza del inversor en el momento $t$, entonces
+\begin{align*}
+    dX_t &= \Delta_t dS_t + r(X_t - \Delta_t S_t) dt \\
+    &= \Delta_t (\mu S_t dt+ \sigma S_t dB_t) + r(X_t - \Delta_t S_t) dt \\ % Removed extra +
+    &= (rX_t + (\mu - r)\Delta_t S_t)dt + \sigma \Delta_t S_t dB_t,
+\end{align*}
+donde $(\mu -r)$ representa prima de riesgo. Ahora, queremos que la igualdad 
+$X_t = v(t, S_t)$ se cumpla y, por ende, necesitamos que los coeficientes de los
+diferenciales tienen que ser iguales. Al igualar los coeficientes de $dB_t$ conseguimos 
+que 
+$$
+\Delta_t  = \frac{\partial v}{\partial S_t}(t, S_t),
+$$
+lo cual es la estrategia de cobertura $\Delta$. Para los coeficientes del diferencial
+$dt$, obtenemos que 
+$$
+\frac{\partial v}{\partial t} + 
+\mu S_t\frac{\partial v}{\partial S_t}+ 
+\frac12 \sigma^2 S_t^2 \frac{\partial^2 v}{\partial S_t^2} = rX_t + (\mu - r)\Delta_t S_t.
+$$
+Donde podemos sustituir a $\Delta_t$ por $\frac{\partial v}{\partial S_t}$, y que $X_t = v(t, S_t)$ y conseguimos
+
+$$
+\frac{\partial v}{\partial t} + 
+\mu S_t\frac{\partial v}{\partial S_t}+ 
+\frac12 \sigma^2 S_t^2 \frac{\partial^2 v}{\partial S_t^2}= rv + (\mu - r)\frac{\partial v}{\partial S_t} S_t, 
+$$
+simplificando obtenemos que
+$$
+\frac{\partial v}{\partial t} + 
+r S_t\frac{\partial v}{\partial S_t}+ % Corrected r \frac{\partial v}{\partial S_t} to r S_t \frac{\partial v}{\partial S_t} from simplification
+\frac12 \sigma^2 S^2_t \frac{\partial^2 v}{\partial S_t^2} = rv.
+$$
+
+Así, consiguiedo que $v$ debería satisfacer la ecuación diferencial partial de Black-Scholes
+$$
+\frac{\partial v}{\partial t}(t, S) + 
+r S\frac{\partial v}{\partial S}(t, S)+ 
+\frac12 \sigma^2 S^2 \frac{\partial^2 v}{\partial S^2}(t, S) = rv(t, S).
+$$
+satisfaciendo las condiciones de frontera $v(T, x) = g(x)$. Si un inversor
+empieza con $X_0 = v(0, S_0)$ y usa la cobertura $\Delta_t  = \frac{\partial v}{\partial S_t}(t, S_t)$,
+entonces el obtendra $X(t) = v(t, S_t)$ para cada $t\le T$. 
+
+\subsection{Opciones Europeas}
+
+Antes de resolver explícitamente la ecuación de Black-Scholes, es importante entender qué es una opción europea y cómo se diferencia de otros instrumentos financieros.
+
+Una \emph{opción} es un contrato financiero que otorga al poseedor el derecho (pero no la obligación) de comprar o vender un activo subyacente a un precio pactado (llamado \emph{strike} o precio de ejercicio) en una fecha futura determinada.
+
+Existen dos tipos principales de opciones:
+\begin{itemize}
+    \item \textbf{Call:} Derecho a comprar el activo subyacente.
+    \item \textbf{Put:} Derecho a vender el activo subyacente.
+\end{itemize}
+
+El valor de una opción depende de varios factores: el precio actual del activo, el precio de ejercicio, el tiempo restante hasta el vencimiento, la volatilidad del activo, la tasa libre de riesgo, entre otros.
+
+Las opciones europeas se caracterizan porque sólo pueden ser ejercidas en la fecha exacta de vencimiento \( T \). Esto las diferencia de las \emph{opciones americanas}, que pueden ser ejercidas en cualquier momento antes o en el vencimiento.
+
+Matemáticamente, este detalle es relevante porque permite derivar una solución cerrada para su precio, dado que no es necesario modelar decisiones de ejercicio anticipadas.
+
+El \emph{payoff} es el valor que recibe el tenedor al ejercer la opción en la fecha de vencimiento. Para una opción europea call, el payoff es:
+\[
+C(T) = \max(S_T - K, 0),
+\]
+donde:
+\begin{itemize}
+    \item \( S_T \) es el precio del activo subyacente en el momento \( T \).
+    \item \( K \) es el precio de ejercicio.
+\end{itemize}
+
+Si el precio del activo está por encima del strike, el poseedor ejercerá la opción y comprará a \( K \) para vender a \( S_T \), obteniendo ganancia. Si no, dejará que la opción expire sin valor.
+
+Para una opción put, el payoff es:
+\[
+P(T) = \max(K - S_T, 0).
+\]
+
+El objetivo principal de la ecuación de Black-Scholes es determinar cuál es el \emph{valor justo hoy} \( C(S, t) \) (o \( P(S, t) \)) de una opción europea, sabiendo que faltan \( T - t \) unidades de tiempo para el vencimiento y que el precio subyacente actual es \( S \).
+
+Este valor debe reflejar el valor esperado descontado del payoff futuro bajo el supuesto de ausencia de arbitraje y con los movimientos del precio del activo modelados por el movimiento Browniano geométrico.
+
+Ahora, para plantear las condiciones de frontera de la ecuación diferencial vamos a considerar
+\begin{enumerate}
+    \item $C(0, t) = 0$ para toda $t$
+    \item $C(S, T) = \max\{S- K, 0\}$
+\end{enumerate}
+
+Para resolver la ecucación de Black-Scholes vamos a hacer varias sustituciones. 
+$\tau = T- t$, $u = C \exp(r\tau)$, y 
+$$ x = \ln \left(\frac{S}{K}\right) + \left(r - \frac12 \sigma^2 \right)\tau.$$
+Al hacer esto podemos ver que
+$$
+\frac{\partial u}{\partial \tau} = \frac12 \sigma^2 \frac{\partial^2 u}{\partial x^2}
+$$
+y la condición terminal $C(S, T) = \max\{S- K, 0\}$ se combierte en una condición inicial
+$$
+u(x, 0)= u_0(x) := K(\max(e^x-1, 0)). 
+$$
+
+Ahora, como tenemos una ecuación de calor, podemos aplicar la transformada de Fourier
+en $x$ y conseguimos que 
+$$
+\frac{\partial \hat u}{\partial \tau} = - \frac12 \sigma^2 (2\pi\omega)^2 \hat u(\omega, \tau) % Corrected t to \tau and Fourier transform factor
+$$
+Al resolver la ecuación diferencial ordinaria en $\tau$ obtenemos que 
+$$
+\hat u(\omega, \tau) = \hat u_0(\omega)e^{-\frac12 \sigma^2 (2\pi\omega)^2 \tau }, % Corrected t to \tau and A(\omega) to \hat u_0(\omega)
+$$ donde $\hat u_0(\omega)$ es la transformada de Fourier de $u_0(x)$. Si definimos $$
+H(x, \tau) := \frac1{\sigma \sqrt{2\pi \tau}} \exp\left(-\frac{x^2}{2\sigma^2 \tau}\right), % Corrected sign in exponent
+$$entonces su transformada de Fourier en $x$ es $e^{-\frac12 \sigma^2 (2\pi\omega)^2 \tau }$. % Corrected factor
+Finalmente podemos recordar que $\mathcal F(f * g) = (\mathcal F f) (\mathcal F g)$, donde $*$
+representa la convolución. Así, 
+$$
+u(x, \tau) = \frac1{\sigma\sqrt{2\pi\tau}}\int_{-\infty}^{\infty} u_0(y) \exp\left(-\frac{(x-y)^2}{2\sigma^2 \tau}\right)\, dy. % Corrected sign in exponent
+$$
+
+Notemos que $u_0(y) = K(\max(e^y-1,0))$, así la integral se simplifica (considerando $y>0$ para $e^y-1 \neq 0$):
+$$
+u(x, \tau) = \frac{K}{\sigma\sqrt{2\pi\tau}}\int_{0}^{\infty} (e^y-1) \exp\left(-\frac{(x-y)^2}{2\sigma^2 \tau}\right)\, dy. % Corrected sign in exponent
+$$
+Así, podemos considerar dos integrales
+$$
+I_1 = \frac{K}{\sigma\sqrt{2\pi\tau}}\int_{0}^{\infty} e^y \exp\left(-\frac{(x-y)^2}{2\sigma^2 \tau}\right)\, dy \quad \text{y}\quad I_2 = -\frac{K}{\sigma\sqrt{2\pi\tau}}\int_{0}^{\infty} \exp\left(-\frac{(x-y)^2}{2\sigma^2 \tau}\right)\, dy.
+$$
+
+La segunda integral $I_2$ (con su signo negativo) se puede solucionar si sustituimos $z = (y-x)/(\sigma \sqrt \tau)$, y conseguimos que 
+$$I_2 = -K \frac{1}{\sqrt{2\pi}}\int_{-x/(\sigma\sqrt\tau)}^{\infty}\exp(-z^2/2)\, dz = -K \left(1-\Phi\left(\frac{-x}{\sigma\sqrt \tau}\right)\right) = -K \Phi\left(\frac{x}{\sigma\sqrt \tau}\right),
+$$
+donde $\Phi$ es la función de distribución de la normal estándar. 
+
+Para la primera integral $I_1$, notemos que el exponente es $y - \frac{(x-y)^2}{2\sigma^2\tau}$.
+Completando el cuadrado para $y$ en el exponente $-( \frac{y^2 - 2y(x+\sigma^2\tau) + x^2}{2\sigma^2\tau} )$:
+$y - \frac{x^2-2xy+y^2}{2\sigma^2\tau} = -\frac{y^2 - 2y(x+\sigma^2\tau) + x^2}{2\sigma^2\tau}$.
+Se obtiene $K e^{x+\frac{1}{2}\sigma^2\tau} \Phi\left(\frac{x+\sigma^2\tau}{\sigma\sqrt{\tau}}\right)$.
+
+Así, tenemos que 
+$$
+u(x, \tau) = K e^{x + \frac12\sigma^2 \tau} 
+\Phi\left(\frac{x + \sigma^2 \tau}{\sigma \sqrt{\tau}}\right) - K
+\Phi\left(\frac{x}{\sigma\sqrt \tau}\right).
+$$
+
+Para terminar, tenemos que hacer las sustituciones de regreso: $\tau=T-t$, $u=C e^{r\tau}$ (so $C=u e^{-r\tau}$), y $x = \ln(S/K) + (r-\frac{1}{2}\sigma^2)\tau$.
+Esto lleva a la fórmula estándar de Black-Scholes para una opción call europea:
+$$ C(S,t) = S N(d_1) - K e^{-r(T-t)} N(d_2) $$
+donde $N(\cdot)$ es la función de distribución acumulada de la normal estándar $\Phi(\cdot)$, y
+\begin{align*}
+    d_1 &= \frac{\ln(S/K) + (r + \frac{1}{2}\sigma^2)(T-t)}{\sigma\sqrt{T-t}} \\
+    d_2 &= \frac{\ln(S/K) + (r - \frac{1}{2}\sigma^2)(T-t)}{\sigma\sqrt{T-t}} = d_1 - \sigma\sqrt{T-t}.
+\end{align*}
+
+\section{Conclusión}
+La valoración de opciones europeas mediante la ecuación de Black-Scholes representa uno de los logros más elegantes de la aplicación del cálculo estocástico a las finanzas. A través del uso de herramientas como el movimiento Browniano geométrico, la fórmula de Itô y las ecuaciones diferenciales estocásticas, es posible construir modelos que capturan aspectos fundamentales del comportamiento de los mercados financieros bajo supuestos ideales.
+
+Si bien este trabajo se ha centrado en una presentación introductoria, es importante destacar que el modelo Black-Scholes, aunque poderoso, no está exento de limitaciones. Aspectos como saltos en los precios, volatilidad estocástica y riesgos de crédito requieren modelos más sofisticados. Sin embargo, el marco presentado aquí constituye la base sobre la cual se desarrollan muchas de las teorías y prácticas modernas en ingeniería financiera.
+
+Así, el estudio matemático de las finanzas no solo abre la puerta a aplicaciones prácticas relevantes, sino que también ilustra cómo las matemáticas puras encuentran un lugar sorprendente y poderoso en el modelado del mundo real.
+
+
+
+\newpage
+\nocite{*}
+\renewcommand{\refname}{Referencias}
+\bibliographystyle{plain}
+\bibliography{thingy_2}
+
+\end{document}
