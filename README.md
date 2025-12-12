@@ -40,8 +40,6 @@ black-scholes-derivation/
 │   ├── references.bib
 ├── images/
 │   └── (optional figures later)
-├── notes/
-│   └── derivation-outline.md
 ├── README.md
 ├── LICENSE
 ```
