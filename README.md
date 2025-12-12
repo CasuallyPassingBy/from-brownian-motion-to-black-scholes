@@ -64,4 +64,8 @@ pdflatex main.tex
 pdflatex main.tex
 ```
 
+## References
+- Shreve, *Stochastic Calculus for Finance*
+- Øksendal, *Stochastic Differential Equations*
+
 
