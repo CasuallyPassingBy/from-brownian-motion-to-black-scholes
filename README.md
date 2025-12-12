@@ -5,7 +5,7 @@ This project is the result of something I’ve wanted to understand for a long t
 **how mathematics, probability, and finance come together to produce the Black–Scholes equation.**
 
 Instead of memorizing the formula or following a standard derivation, I decided to rebuild the result myself, step by step, from the core ideas of stochastic calculus.  
-The goal was to create something that felt rigorous, intuitive, and accessible — the kind of explanation I wish I had when I first became curious about mathematical finance.
+The goal was to create something that felt rigorous, intuitive, and accessible.
 
 ---
 
